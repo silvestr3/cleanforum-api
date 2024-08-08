@@ -1,23 +1,36 @@
 import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { Question } from "@/domain/forum/enterprise/entities/question";
 import { Slug } from "@/domain/forum/enterprise/entities/value-objects/slug";
-import { Question as PrismaQuestion } from "@prisma/client";
+import { Question as PrismaQuestion, Prisma } from "@prisma/client";
 
 export class PrismaQuestionMapper {
-  static toDomain(rawQuestion: PrismaQuestion): Question {
+  static toDomain(raw: PrismaQuestion): Question {
     return Question.create(
       {
-        title: rawQuestion.title,
-        content: rawQuestion.content,
-        authorId: new UniqueEntityID(rawQuestion.authorId),
-        bestAnswerId: rawQuestion.bestAnswerId
-          ? new UniqueEntityID(rawQuestion.bestAnswerId)
+        title: raw.title,
+        content: raw.content,
+        authorId: new UniqueEntityID(raw.authorId),
+        bestAnswerId: raw.bestAnswerId
+          ? new UniqueEntityID(raw.bestAnswerId)
           : null,
-        slug: Slug.createFromText(rawQuestion.slug),
-        createdAt: rawQuestion.createdAt,
-        updatedAt: rawQuestion.updatedAt,
+        slug: Slug.createFromText(raw.slug),
+        createdAt: raw.createdAt,
+        updatedAt: raw.updatedAt,
       },
-      new UniqueEntityID(rawQuestion.id)
+      new UniqueEntityID(raw.id)
     );
+  }
+
+  static toPrisma(question: Question): Prisma.QuestionUncheckedCreateInput {
+    return {
+      id: question.id.toString(),
+      authorId: question.authorId.toString(),
+      bestAnswerId: question.bestAnswerId?.toString(),
+      title: question.title,
+      content: question.content,
+      slug: question.slug.value,
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+    };
   }
 }
