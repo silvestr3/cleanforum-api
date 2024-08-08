@@ -10,7 +10,9 @@ export class PrismaQuestionMapper {
         title: rawQuestion.title,
         content: rawQuestion.content,
         authorId: new UniqueEntityID(rawQuestion.authorId),
-        bestAnswerId: undefined,
+        bestAnswerId: rawQuestion.bestAnswerId
+          ? new UniqueEntityID(rawQuestion.bestAnswerId)
+          : null,
         slug: Slug.createFromText(rawQuestion.slug),
         createdAt: rawQuestion.createdAt,
         updatedAt: rawQuestion.updatedAt,
