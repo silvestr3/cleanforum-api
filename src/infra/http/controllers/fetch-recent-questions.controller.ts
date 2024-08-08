@@ -3,6 +3,9 @@ import { JwtAuthGuard } from "@/infra/auth/jwt-auth.guard";
 import { ZodValidationPipe } from "@/infra/http/pipes/zod-validation.pipe";
 import { PrismaService } from "@/infra/database/prisma/prisma.service";
 import { z } from "zod";
+import { FetchRecentQuestionsUseCase } from "@/domain/forum/application/use-cases/fetch-recent-questions";
+import { PrismaQuestionMapper } from "@/infra/database/prisma/mappers/prisma-question-mapper";
+import { QuestionPresenter } from "../presenters/question-presenter";
 
 const pageQueryParamSchema = z
   .string()
@@ -18,18 +21,22 @@ const queryValidationPipe = new ZodValidationPipe(pageQueryParamSchema);
 @Controller("/questions")
 @UseGuards(JwtAuthGuard)
 export class FetchRecentQuestionsController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private fetchRecentQuestions: FetchRecentQuestionsUseCase) {}
 
   @Get()
   async handle(@Query("page", queryValidationPipe) page: PageQueryParamSchema) {
-    const questions = await this.prisma.question.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 20,
-      skip: (page - 1) * 20,
-    });
+    const result = await this.fetchRecentQuestions.execute({ page });
 
-    return { questions };
+    if (result.isLeft()) {
+      throw new Error();
+    }
+
+    const { questions } = result.value;
+
+    return {
+      questions: questions.map((question) =>
+        QuestionPresenter.present(question)
+      ),
+    };
   }
 }
