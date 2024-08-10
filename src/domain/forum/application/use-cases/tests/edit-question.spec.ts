@@ -18,8 +18,6 @@ describe("Edit question use case tests", () => {
     inMemoryQuestionsRepository = new InMemoryQuestionsRepository(
       inMemoryQuestionAttachmentsRepository
     );
-    inMemoryQuestionAttachmentsRepository =
-      new InMemoryQuestionAttachmentsRepository();
 
     sut = new EditQuestionUseCase(
       inMemoryQuestionsRepository,
@@ -91,5 +89,48 @@ describe("Edit question use case tests", () => {
 
     expect(result.isLeft()).toBe(true);
     expect(result.value).toBeInstanceOf(NotAllowedError);
+  });
+
+  it("should sync new and removed attachment when editing a question", async () => {
+    const newQuestion = MakeQuestion(
+      {
+        authorId: new UniqueEntityID("author-1"),
+      },
+      new UniqueEntityID("question-1")
+    );
+
+    await inMemoryQuestionsRepository.create(newQuestion);
+
+    inMemoryQuestionAttachmentsRepository.items.push(
+      MakeQuestionAttachment({
+        questionId: newQuestion.id,
+        attachmentId: new UniqueEntityID("1"),
+      }),
+      MakeQuestionAttachment({
+        questionId: newQuestion.id,
+        attachmentId: new UniqueEntityID("2"),
+      })
+    );
+
+    const result = await sut.execute({
+      questionId: newQuestion.id.toValue(),
+      authorId: "author-1",
+      title: "Pergunta teste",
+      content: "Conteúdo teste",
+      attachmentIds: ["1", "3"],
+    });
+
+    expect(result.isRight()).toBe(true);
+    expect(inMemoryQuestionAttachmentsRepository.items).toHaveLength(2);
+    expect(inMemoryQuestionAttachmentsRepository.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          attachmentId: new UniqueEntityID("1"),
+        }),
+        expect.objectContaining({
+          attachmentId: new UniqueEntityID("3"),
+        }),
+      ])
+    );
   });
 });
