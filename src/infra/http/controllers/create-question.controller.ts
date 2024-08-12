@@ -8,6 +8,7 @@ import { z } from "zod";
 const createQuestionBodySchema = z.object({
   title: z.string(),
   content: z.string(),
+  attachments: z.array(z.string().uuid()),
 });
 
 type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>;
@@ -23,14 +24,14 @@ export class CreateQuestionController {
     @CurrentUser() user: UserPayload,
     @Body(bodyValidationPipe) body: CreateQuestionBodySchema
   ) {
-    const { content, title } = body;
+    const { content, title, attachments } = body;
     const { sub } = user;
 
     const result = await this.createQuestion.execute({
       title,
       content,
       authorId: sub,
-      attachmentIds: [],
+      attachmentIds: attachments,
     });
 
     if (result.isLeft()) {
