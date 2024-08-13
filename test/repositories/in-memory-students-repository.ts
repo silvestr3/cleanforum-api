@@ -1,16 +1,23 @@
-import { StudentsRepository } from "@/domain/forum/application/repositories/students-repository";
-import { Student } from "@/domain/forum/enterprise/entities/student";
+import { DomainEvents } from '@/core/events/domain-events'
+import { StudentsRepository } from '@/domain/forum/application/repositories/students-repository'
+import { Student } from '@/domain/forum/enterprise/entities/student'
 
 export class InMemoryStudentsRepository implements StudentsRepository {
-  items: Student[] = [];
+  public items: Student[] = []
 
-  async create(student: Student): Promise<void> {
-    this.items.push(student);
+  async findByEmail(email: string) {
+    const student = this.items.find((item) => item.email === email)
+
+    if (!student) {
+      return null
+    }
+
+    return student
   }
 
-  async findByEmail(email: string): Promise<Student | null> {
-    const student = this.items.find((item) => item.email === email);
+  async create(student: Student) {
+    this.items.push(student)
 
-    return student ?? null;
+    DomainEvents.dispatchEventsForAggregate(student.id)
   }
 }

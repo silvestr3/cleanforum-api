@@ -5,44 +5,44 @@ import {
   HttpCode,
   Param,
   Put,
-} from "@nestjs/common";
-import { CurrentUser } from "@/infra/auth/current-user.decorator";
-import { UserPayload } from "@/infra/auth/jwt.strategy";
-import { ZodValidationPipe } from "@/infra/http/pipes/zod-validation.pipe";
-import { EditAnswerUseCase } from "@/domain/forum/application/use-cases/edit-answer";
-import { z } from "zod";
+} from '@nestjs/common'
+import { CurrentUser } from '@/infra/auth/current-user-decorator'
+import { UserPayload } from '@/infra/auth/jwt.strategy'
+import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
+import { z } from 'zod'
+import { EditAnswerUseCase } from '@/domain/forum/application/use-cases/edit-answer'
 
 const editAnswerBodySchema = z.object({
   content: z.string(),
-});
+})
 
-type EditAnswerBodySchema = z.infer<typeof editAnswerBodySchema>;
+const bodyValidationPipe = new ZodValidationPipe(editAnswerBodySchema)
 
-const bodyValidationPipe = new ZodValidationPipe(editAnswerBodySchema);
+type EditAnswerBodySchema = z.infer<typeof editAnswerBodySchema>
 
-@Controller("/answers/:id")
+@Controller('/answers/:id')
 export class EditAnswerController {
   constructor(private editAnswer: EditAnswerUseCase) {}
 
   @Put()
   @HttpCode(204)
   async handle(
-    @CurrentUser() user: UserPayload,
     @Body(bodyValidationPipe) body: EditAnswerBodySchema,
-    @Param("id") answerId: string
+    @CurrentUser() user: UserPayload,
+    @Param('id') answerId: string,
   ) {
-    const { content } = body;
-    const { sub } = user;
+    const { content } = body
+    const userId = user.sub
 
     const result = await this.editAnswer.execute({
-      answerId,
       content,
-      authorId: sub,
-      attachmentIds: [],
-    });
+      answerId,
+      authorId: userId,
+      attachmentsIds: [],
+    })
 
     if (result.isLeft()) {
-      throw new BadRequestException();
+      throw new BadRequestException()
     }
   }
 }

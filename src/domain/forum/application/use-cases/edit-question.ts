@@ -1,75 +1,77 @@
-import { UniqueEntityID } from "@/core/entities/unique-entity-id";
-import { Question } from "../../enterprise/entities/question";
-import { QuestionsRepository } from "../repositories/questions-repository";
-import { Either, left, right } from "@/core/either";
-import { ResourceNotFoundError } from "@/core/errors/errors/resource-not-found-error";
-import { NotAllowedError } from "@/core/errors/errors/not-allowed-error";
-import { QuestionAttachmentsRepository } from "../repositories/question-attachments-repository";
-import { QuestionAttachmentList } from "../../enterprise/entities/question-attachment-list";
-import { QuestionAttachment } from "../../enterprise/entities/question-attachment";
-import { Injectable } from "@nestjs/common";
+import { Either, left, right } from '@/core/either'
+import { NotAllowedError } from '@/core/errors/errors/not-allowed-error'
+import { ResourceNotFoundError } from '@/core/errors/errors/resource-not-found-error'
+import { Question } from '@/domain/forum/enterprise/entities/question'
+import { QuestionsRepository } from '../repositories/questions-repository'
+import { QuestionAttachmentsRepository } from '@/domain/forum/application/repositories/question-attachments-repository'
+import { QuestionAttachmentList } from '@/domain/forum/enterprise/entities/question-attachment-list'
+import { QuestionAttachment } from '@/domain/forum/enterprise/entities/question-attachment'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+import { Injectable } from '@nestjs/common'
 
 interface EditQuestionUseCaseRequest {
-  questionId: string;
-  authorId: string;
-  title: string;
-  content: string;
-  attachmentIds: string[];
+  authorId: string
+  questionId: string
+  title: string
+  content: string
+  attachmentsIds: string[]
 }
 
 type EditQuestionUseCaseResponse = Either<
   ResourceNotFoundError | NotAllowedError,
   {
-    question: Question;
+    question: Question
   }
->;
+>
 
 @Injectable()
 export class EditQuestionUseCase {
   constructor(
     private questionsRepository: QuestionsRepository,
-    private questionAttachmentsRepository: QuestionAttachmentsRepository
+    private questionAttachmentsRepository: QuestionAttachmentsRepository,
   ) {}
 
   async execute({
-    questionId,
     authorId,
+    questionId,
     title,
     content,
-    attachmentIds,
+    attachmentsIds,
   }: EditQuestionUseCaseRequest): Promise<EditQuestionUseCaseResponse> {
-    const question = await this.questionsRepository.findById(questionId);
+    const question = await this.questionsRepository.findById(questionId)
 
     if (!question) {
-      return left(new ResourceNotFoundError());
+      return left(new ResourceNotFoundError())
     }
 
-    if (question.authorId.toString() !== authorId) {
-      return left(new NotAllowedError());
+    if (authorId !== question.authorId.toString()) {
+      return left(new NotAllowedError())
     }
 
-    const currentAttachments =
-      await this.questionAttachmentsRepository.findManyByQuestionId(questionId);
+    const currentQuestionAttachments =
+      await this.questionAttachmentsRepository.findManyByQuestionId(questionId)
 
     const questionAttachmentList = new QuestionAttachmentList(
-      currentAttachments
-    );
+      currentQuestionAttachments,
+    )
 
-    const questionAttachmentsUpdated = attachmentIds.map((attachmentId) => {
+    const questionAttachments = attachmentsIds.map((attachmentId) => {
       return QuestionAttachment.create({
         attachmentId: new UniqueEntityID(attachmentId),
         questionId: question.id,
-      });
-    });
+      })
+    })
 
-    questionAttachmentList.update(questionAttachmentsUpdated);
-    question.attachments = questionAttachmentList;
+    questionAttachmentList.update(questionAttachments)
 
-    question.title = title;
-    question.content = content;
+    question.attachments = questionAttachmentList
+    question.title = title
+    question.content = content
 
-    this.questionsRepository.save(question);
+    await this.questionsRepository.save(question)
 
-    return right({ question });
+    return right({
+      question,
+    })
   }
 }

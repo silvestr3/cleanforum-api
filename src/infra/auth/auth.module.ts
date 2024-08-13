@@ -12,8 +12,8 @@ import { EnvModule } from "../env/env.module";
     PassportModule,
     JwtModule.registerAsync({
       imports: [EnvModule],
-      global: true,
       inject: [EnvService],
+      global: true,
       useFactory(env: EnvService) {
         const privateKey = env.get("JWT_PRIVATE_KEY");
         const publicKey = env.get("JWT_PUBLIC_KEY");
@@ -27,12 +27,12 @@ import { EnvModule } from "../env/env.module";
     }),
   ],
   providers: [
+    JwtStrategy,
+    EnvService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    JwtStrategy,
-    EnvService,
   ],
 })
 export class AuthModule {}

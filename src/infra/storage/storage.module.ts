@@ -1,7 +1,7 @@
-import { Module } from "@nestjs/common";
-import { R2Storage } from "./r2-storage";
-import { Uploader } from "@/domain/forum/application/storage/uploader";
-import { EnvModule } from "../env/env.module";
+import { Uploader } from '@/domain/forum/application/storage/uploader'
+import { Module } from '@nestjs/common'
+import { R2Storage } from './r2-storage'
+import { EnvModule } from '../env/env.module'
 
 @Module({
   imports: [EnvModule],
@@ -11,7 +11,6 @@ import { EnvModule } from "../env/env.module";
       useClass: R2Storage,
     },
   ],
-
   exports: [Uploader],
 })
 export class StorageModule {}
