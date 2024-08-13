@@ -3,12 +3,15 @@ import { PaginationParams } from "@/core/repositories/pagination-params";
 import { AnswerAttachmentsRepository } from "@/domain/forum/application/repositories/answer-attachments-repository";
 import { AnswersRepository } from "@/domain/forum/application/repositories/answers-repository";
 import { Answer } from "@/domain/forum/enterprise/entities/answer";
+import { AnswerWithAuthor } from "@/domain/forum/enterprise/entities/value-objects/answer-with-author";
+import { InMemoryStudentsRepository } from "./in-memory-students-repository";
 
 export class InMemoryAnswersRepository implements AnswersRepository {
   public items: Answer[] = [];
 
   constructor(
-    private answerAttachmentsRepository: AnswerAttachmentsRepository
+    private answerAttachmentsRepository: AnswerAttachmentsRepository,
+    private studentsRepository: InMemoryStudentsRepository
   ) {}
 
   async findById(id: string) {
@@ -24,6 +27,37 @@ export class InMemoryAnswersRepository implements AnswersRepository {
   async findManyByQuestionId(questionId: string, { page }: PaginationParams) {
     const answers = this.items
       .filter((item) => item.questionId.toString() === questionId)
+      .slice((page - 1) * 20, page * 20);
+
+    return answers;
+  }
+
+  async findManyByQuestionIdWithAuthor(
+    questionId: string,
+    { page }: PaginationParams
+  ) {
+    const answers = this.items
+      .filter((item) => item.questionId.toString() === questionId)
+      .map((answer) => {
+        const author = this.studentsRepository.items.find((student) =>
+          student.id.equals(answer.authorId)
+        );
+
+        if (!author) {
+          throw new Error(
+            `Author with id "${answer.authorId}" has not been found`
+          );
+        }
+
+        return AnswerWithAuthor.create({
+          answerId: answer.id,
+          content: answer.content,
+          createdAt: answer.createdAt,
+          updatedAt: answer.updatedAt,
+          authorId: answer.authorId,
+          author: author?.name,
+        });
+      })
       .slice((page - 1) * 20, page * 20);
 
     return answers;
