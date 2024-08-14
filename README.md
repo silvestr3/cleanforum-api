@@ -40,6 +40,8 @@ npm run test
 ```
 
 - E2E tests:
+You can create a separate R2/S3 bucket for end-to-end tests and override the `AWS_BUCKET_NAME` environment variable in the `.env.test` file
+
 ```bash
 npm run test:e2e
 ```
