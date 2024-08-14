@@ -2,17 +2,22 @@ import { UniqueEntityID } from "@/core/entities/unique-entity-id";
 import { AnswerQuestionUseCase } from "@/domain/forum/application/use-cases/answer-question";
 import { InMemoryAnswerAttachmentsRepository } from "test/repositories/in-memory-answer-attachments-repository";
 import { InMemoryAnswersRepository } from "test/repositories/in-memory-answers-repository";
+import { InMemoryStudentsRepository } from "test/repositories/in-memory-students-repository";
 
 let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository;
 let inMemoryAnswersRepository: InMemoryAnswersRepository;
 let sut: AnswerQuestionUseCase;
+let inMemoryStudentsRepository: InMemoryStudentsRepository;
 
 describe("Create Answer", () => {
   beforeEach(() => {
     inMemoryAnswerAttachmentsRepository =
       new InMemoryAnswerAttachmentsRepository();
+    inMemoryStudentsRepository = new InMemoryStudentsRepository();
+
     inMemoryAnswersRepository = new InMemoryAnswersRepository(
-      inMemoryAnswerAttachmentsRepository
+      inMemoryAnswerAttachmentsRepository,
+      inMemoryStudentsRepository
     );
     sut = new AnswerQuestionUseCase(inMemoryAnswersRepository);
   });
