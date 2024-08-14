@@ -108,7 +108,7 @@ describe("Prisma questions repository (E2E)", () => {
     );
   });
 
-  it.only("should reset question details cache when saving the question", async () => {
+  it("should reset question details cache when saving the question", async () => {
     const user = await studentFactory.makePrismaStudent({
       name: "John Doe",
     });

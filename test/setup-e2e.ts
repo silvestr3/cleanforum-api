@@ -36,13 +36,13 @@ const schemaId = randomUUID();
 beforeAll(async () => {
   const databaseURL = generateUniqueDatabaseURL(schemaId);
 
-  env.DATABASE_URL = databaseURL;
+  process.env.DATABASE_URL = databaseURL;
 
   DomainEvents.shouldRun = false;
 
   await redis.flushdb();
 
-  execSync("pnpm prisma migrate deploy");
+  execSync("npx prisma migrate deploy");
 });
 
 afterAll(async () => {
