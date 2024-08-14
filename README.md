@@ -30,3 +30,16 @@ npx prisma migrate deploy
 ```bash
 npm run start:dev
 ```
+
+
+## Testing
+
+- Unit tests:
+```bash
+npm run test
+```
+
+- E2E tests:
+```bash
+npm run test:e2e
+```
