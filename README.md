@@ -1,4 +1,4 @@
-# Clean Forum
+# Clean Forum - API
 
 Forum application API built with Nestjs, Clean Architecture and DDD
 
