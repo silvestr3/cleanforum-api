@@ -1,6 +1,8 @@
-# Clean Forum
+# Clean Forum - API
 
-Forum application API built with Nestjs, Clean Architecture and DDD
+Forum application API built with Nestjs, following principles of Clean Architecture and Domain-Driven Design.
+
+Client App (under construction) available [here](https://github.com/silvestr3/cleanforum-web)
 
 ## How to start
 1. Install dependencies:
@@ -8,7 +10,7 @@ Forum application API built with Nestjs, Clean Architecture and DDD
 npm install
 ```
 
-2. Generate signing key pair:
+2. Generate JWT signing key pair:
 ```bash
 chmod +x genkeys.sh
 ./genkeys.sh
