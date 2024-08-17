@@ -1,6 +1,7 @@
 import { PaginationParams } from "@/core/repositories/pagination-params";
 import { Question } from "@/domain/forum/enterprise/entities/question";
 import { QuestionDetails } from "../../enterprise/entities/value-objects/question-details";
+import { QuestionWithAuthor } from "../../enterprise/entities/value-objects/question-with-author";
 
 export abstract class QuestionsRepository {
   abstract findById(id: string): Promise<Question | null>;
@@ -9,6 +10,11 @@ export abstract class QuestionsRepository {
   abstract findDetailsBySlug(slug: string): Promise<QuestionDetails | null>;
 
   abstract findManyRecent(params: PaginationParams): Promise<Question[]>;
+
+  abstract findManyRecentWithAuthor(
+    params: PaginationParams
+  ): Promise<QuestionWithAuthor[]>;
+
   abstract save(question: Question): Promise<void>;
   abstract create(question: Question): Promise<void>;
   abstract delete(question: Question): Promise<void>;

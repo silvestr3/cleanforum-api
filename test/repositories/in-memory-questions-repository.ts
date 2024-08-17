@@ -7,6 +7,7 @@ import { InMemoryAttachmentsRepository } from "./in-memory-attachments-repositor
 import { InMemoryStudentsRepository } from "./in-memory-students-repository";
 import { QuestionDetails } from "@/domain/forum/enterprise/entities/value-objects/question-details";
 import { InMemoryQuestionAttachmentsRepository } from "./in-memory-question-attachments-repository";
+import { QuestionWithAuthor } from "@/domain/forum/enterprise/entities/value-objects/question-with-author";
 
 export class InMemoryQuestionsRepository implements QuestionsRepository {
   public items: Question[] = [];
@@ -94,6 +95,33 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
       .slice((page - 1) * 20, page * 20);
 
     return questions;
+  }
+
+  async findManyRecentWithAuthor({ page }: PaginationParams) {
+    const questions = this.items
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice((page - 1) * 20, page * 20);
+
+    return questions.map((question) => {
+      const author = this.studentsRepository.items.find((student) => {
+        return student.id.equals(question.authorId);
+      });
+
+      if (!author) {
+        throw new Error(
+          `Author for question ${question.id.toString()} was not found`
+        );
+      }
+
+      return QuestionWithAuthor.create({
+        questionId: question.id,
+        authorId: author.id,
+        author: author.name,
+        createdAt: question.createdAt,
+        title: question.title,
+        bestAnswerId: question.bestAnswerId,
+      });
+    });
   }
 
   async create(question: Question) {

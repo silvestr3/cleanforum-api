@@ -4,6 +4,7 @@ import { FetchRecentQuestionsUseCase } from "../fetch-recent-questions";
 import { InMemoryQuestionAttachmentsRepository } from "test/repositories/in-memory-question-attachments-repository";
 import { InMemoryAttachmentsRepository } from "test/repositories/in-memory-attachments-repository";
 import { InMemoryStudentsRepository } from "test/repositories/in-memory-students-repository";
+import { makeStudent } from "test/factories/make-student";
 
 let inMemoryQuestionAttachmentsRepository: InMemoryQuestionAttachmentsRepository;
 let inMemoryQuestionsRepository: InMemoryQuestionsRepository;
@@ -26,14 +27,29 @@ describe("Fetch Recent Questions", () => {
   });
 
   it("should be able to fetch recent questions", async () => {
+    const author = makeStudent({
+      name: "John Doe",
+    });
+
+    await inMemoryStudentsRepository.create(author);
+
     await inMemoryQuestionsRepository.create(
-      makeQuestion({ createdAt: new Date(2022, 0, 20) })
+      makeQuestion({
+        createdAt: new Date(2022, 0, 20),
+        authorId: author.id,
+      })
     );
     await inMemoryQuestionsRepository.create(
-      makeQuestion({ createdAt: new Date(2022, 0, 18) })
+      makeQuestion({
+        createdAt: new Date(2022, 0, 18),
+        authorId: author.id,
+      })
     );
     await inMemoryQuestionsRepository.create(
-      makeQuestion({ createdAt: new Date(2022, 0, 23) })
+      makeQuestion({
+        createdAt: new Date(2022, 0, 23),
+        authorId: author.id,
+      })
     );
 
     const result = await sut.execute({
@@ -41,15 +57,34 @@ describe("Fetch Recent Questions", () => {
     });
 
     expect(result.value?.questions).toEqual([
-      expect.objectContaining({ createdAt: new Date(2022, 0, 23) }),
-      expect.objectContaining({ createdAt: new Date(2022, 0, 20) }),
-      expect.objectContaining({ createdAt: new Date(2022, 0, 18) }),
+      expect.objectContaining({
+        createdAt: new Date(2022, 0, 23),
+        author: "John Doe",
+      }),
+      expect.objectContaining({
+        createdAt: new Date(2022, 0, 20),
+        author: "John Doe",
+      }),
+      expect.objectContaining({
+        createdAt: new Date(2022, 0, 18),
+        author: "John Doe",
+      }),
     ]);
   });
 
   it("should be able to fetch paginated recent questions", async () => {
+    const author = makeStudent({
+      name: "John Doe",
+    });
+
+    await inMemoryStudentsRepository.create(author);
+
     for (let i = 1; i <= 22; i++) {
-      await inMemoryQuestionsRepository.create(makeQuestion());
+      await inMemoryQuestionsRepository.create(
+        makeQuestion({
+          authorId: author.id,
+        })
+      );
     }
 
     const result = await sut.execute({
